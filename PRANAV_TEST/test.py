@@ -4,8 +4,12 @@ import json
 # This import is simply meant for testing, delete it during real development.
 import asyncio 
 
-# Enter your API key here during testing.
-client = AsyncTavilyClient(TAVILY_API_KEY) 
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+client = AsyncTavilyClient(os.environ.get("TAVILY_API_KEY"))
 
 # This is esentially a function that waits until the user inputs a query and causes this function to run.
 async def search_tavily(user_query):
