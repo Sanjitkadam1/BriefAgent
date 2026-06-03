@@ -5,7 +5,7 @@ import json
 import asyncio 
 
 # Enter your API key here during testing.
-client = AsyncTavilyClient("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") 
+client = AsyncTavilyClient(TAVILY_API_KEY) 
 
 # This is esentially a function that waits until the user inputs a query and causes this function to run.
 async def search_tavily(user_query):
