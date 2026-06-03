@@ -1,11 +1,27 @@
-from tavily import TavilyClient
-import os
+from tavily import AsyncTavilyClient
+import json
+import asyncio 
+#enter API key here 
+client = AsyncTavilyClient("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") 
 
-tavily = TavilyClient(api_key="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")
-results = tavily.search(query="EV market trends 2026", max_results=3)
 
-for r in results["results"]:
-    print(r["title"])
-    print(r["url"])
-    print(r["content"][:200])
-    print("---")
+async def search_tavily(user_query):
+    if (user_query != "") :
+        results = await client.search(
+            query = user_query,
+            max_results = 4, 
+            search_depth = "advanced"
+        )
+
+        #package lists intoa  cleanly organized dictionary
+        formated = [] 
+        for r in results["results"]:
+            formated.append({
+                "title" : r["title"], 
+                "url" : r["url"],
+                "content" : r["content"][:500]
+            })
+        print(formated)
+        return formated
+
+asyncio.run(search_tavily("Tesla-SpaceX IPO"))
