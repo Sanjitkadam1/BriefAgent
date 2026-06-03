@@ -1,10 +1,13 @@
 from tavily import AsyncTavilyClient
 import json
+
+# This import is simply meant for testing, delete it during real development.
 import asyncio 
-#enter API key here 
+
+# Enter your API key here during testing.
 client = AsyncTavilyClient("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") 
 
-
+# This is esentially a function that waits until the user inputs a query and causes this function to run.
 async def search_tavily(user_query):
     if (user_query != "") :
         results = await client.search(
@@ -13,7 +16,7 @@ async def search_tavily(user_query):
             search_depth = "advanced"
         )
 
-        #package lists intoa  cleanly organized dictionary
+        # This lists the tavily response into a organized dictionary of responses.
         formated = [] 
         for r in results["results"]:
             formated.append({
@@ -24,4 +27,5 @@ async def search_tavily(user_query):
         print(formated)
         return formated
 
+# This is just for testing, delete this during actual development of code.
 asyncio.run(search_tavily("Tesla-SpaceX IPO"))
