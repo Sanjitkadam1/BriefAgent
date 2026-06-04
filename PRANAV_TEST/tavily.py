@@ -1,10 +1,6 @@
 from tavily import AsyncTavilyClient
 import json
 
-# This import is simply meant for testing, delete it during real development.
-import asyncio 
-
-
 from dotenv import load_dotenv
 import os
 
@@ -30,6 +26,3 @@ async def search_tavily(user_query):
             })
         print(formated)
         return formated
-
-# This is just for testing, delete this during actual development of code.
-asyncio.run(search_tavily("Tesla-SpaceX IPO"))
