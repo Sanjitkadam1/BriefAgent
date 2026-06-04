@@ -15,7 +15,7 @@ async def generate_brief(user_query, tavily_results):
             max_tokens = 1000,
             messages = [ {
                 "role": "user", 
-                "content": user_query + "tavily findings: " + str(tavily_results)
+                "content": user_query + " tavily findings: " + str(tavily_results)
                 }
             ], 
         )
