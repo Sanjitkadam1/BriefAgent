@@ -31,7 +31,7 @@ async def brief_command(ack, client, command):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📊 *BriefAgent* is ready to research *{topic}*\nOpen the assistant to get your brief."
+                    "text": f"📊 *BriefAgent* is ready to research *{topic}*\nOpen the assistant in the sidebar or click on the link to further prompt the AI."
                 }
             },
             {
