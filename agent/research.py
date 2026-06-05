@@ -8,6 +8,7 @@ async def run_research(topic, action_token, client, logger, existing_brief=None)
         rts_results = ""
         if action_token:
             try:
+                logger.info(f"Calling RTS with token: {action_token[:20]}...")
                 rts_response = await client.api_call(
                     "assistant.search.context",
                     json={
@@ -15,14 +16,16 @@ async def run_research(topic, action_token, client, logger, existing_brief=None)
                         "query": topic
                     }
                 )
-                messages = rts_response.get("messages", [])
+                # logger.info(f"RTS raw response: {rts_response}")
+                messages = rts_response.get("results", {}).get("messages", [])
                 if messages:
                     rts_results = "\n".join([
-                        f"- {m.get('text', '')}" for m in messages[:10]
+                        f"- {m.get('content', '')}" for m in messages[:10] if m.get('content')
                     ])
                     logger.info(f"RTS returned {len(messages)} messages")
                 else:
                     rts_results = "No relevant internal messages found."
+                    logger.info("RTS returned 0 messages")
             except Exception as e:
                 logger.warning(f"RTS API call failed: {e}")
                 rts_results = "Internal search unavailable."

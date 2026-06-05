@@ -24,5 +24,5 @@ async def search_tavily(user_query):
                 "url" : r["url"],
                 "content" : r["content"][:500]
             })
-        print(formated)
+        # print(formated)
         return formated
