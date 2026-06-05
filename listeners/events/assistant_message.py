@@ -13,15 +13,12 @@ async def handle_assistant_message(
     client: AsyncWebClient,
     logger: Logger
 ):
-    logger.info(f"Message payload keys: {list(payload.keys())}")
-    logger.info(f"Assistant thread data: {payload.get('assistant_thread')}")
     try:
         user_id = payload["user"]
         user_message = payload.get("text", "").strip()
         channel_id = payload["channel"]
         thread_ts = payload["thread_ts"]
         action_token = payload.get("assistant_thread", {}).get("action_token")
-        logger.info(f"Action token: {action_token}")
 
         pending = get_pending_brief(user_id)
 
