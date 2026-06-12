@@ -55,7 +55,7 @@ Also use them when the user explicitly asks you to perform a Slack action.
 
 agent_tools_server = create_sdk_mcp_server(
     name="agent-tools",
-    version="1.0.0",
+    version="3.0.0",
     tools=[add_emoji_reaction_tool],
 )
 
