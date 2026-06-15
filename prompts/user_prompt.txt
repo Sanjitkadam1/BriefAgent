@@ -1,0 +1,15 @@
+USER REQUEST: {topic}
+
+INTERNAL CONTEXT (Slack messages from this team's workspace):
+{rts_results}
+
+EXTERNAL CONTEXT (live web search results):
+{tavily_results}
+
+DATE: {date}
+SOURCES: {sources}
+
+Generate a business brief using the default output structure.
+Use the internal and external context above to inform the brief.
+If internal context is not material, say so in the Internal Context section.
+Do not use emojis. Do not invent facts.

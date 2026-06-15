@@ -79,11 +79,12 @@ async def handle_assistant_message(
             )
 
             refined = await run_research(
-                topic=f"{pending['topic']} — user refinement: {user_message}",
+                topic=pending["topic"],
                 action_token=action_token,
                 client=client,
                 logger=logger,
-                existing_brief=brief
+                existing_brief=brief,
+                refinement_request=user_message
             )
 
             update_brief(user_id, refined)
