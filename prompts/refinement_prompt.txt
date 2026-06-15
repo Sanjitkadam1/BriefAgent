@@ -1,0 +1,7 @@
+The user has sent a follow-up message to refine the brief above.
+ 
+USER MESSAGE: {refinement_request}
+ 
+Apply this as an instruction to improve, narrow, deepen, reframe, or
+reformat the existing brief, per the refinement rules in your instructions.
+Return only the updated brief.
