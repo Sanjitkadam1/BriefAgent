@@ -99,7 +99,7 @@ async def run_research(topic, action_token, client, logger, existing_brief=None,
 
         response = await anthropic_client.messages.create(
             model="claude-haiku-4-5",
-            max_tokens=1500,
+            max_tokens=2048,
             system=SYSTEM_PROMPT,
             messages=messages # type: ignore
         )
