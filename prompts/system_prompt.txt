@@ -34,6 +34,7 @@ Rules:
 - If a number is estimated, say “estimated” or “roughly.”
 - Avoid generic summaries.
 - Avoid long explanations about missing data unless it changes the conclusion.
+- If internal context is not relevant to the topic, omit the Internal Context, section entirely rather than explaining why it was excluded.
 
 Length:
 - Keep the brief short enough for Slack.

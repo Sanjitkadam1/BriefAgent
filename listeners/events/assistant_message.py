@@ -1,16 +1,40 @@
 from logging import Logger
 from slack_bolt.context.say.async_say import AsyncSay
+from slack_bolt.context.set_suggested_prompts.async_set_suggested_prompts import AsyncSetSuggestedPrompts
 from slack_sdk.web.async_client import AsyncWebClient
-from agent.state import get_pending_brief, update_brief, clear_pending_brief
+from agent.state import get_session, start_session, update_session
 from agent.research import run_research
 
-# Called by: Slack's Assistant middleware when the user sends any message in the BriefAgent sidebar thread
-# checks if this is the first message (brief is None) → runs full research and posts brief + Post button, 
-# or if it's a follow-up message → runs refinement with the user's instruction and updates the brief
+
+REFINEMENT_PROMPTS = [
+    {"title": "Focus on risks", "message": "Focus more on the risks and challenges"},
+    {"title": "Make it shorter", "message": "Make the brief more concise"},
+    {"title": "Slide-ready version", "message": "Convert this into slide-ready bullets"},
+    {"title": "Save as Canvas", "message": "Save this brief as a canvas"},
+]
+
+EXPORT_BUTTONS = {
+    "type": "actions",
+    "elements": [
+        {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "Download PDF"},
+            "action_id": "save_as_pdf",
+            "style": "primary"
+        },
+        {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "Download TXT"},
+            "action_id": "save_as_txt"
+        }
+    ]
+}
+
 async def handle_assistant_message(
     payload,
     say: AsyncSay,
     client: AsyncWebClient,
+    set_suggested_prompts: AsyncSetSuggestedPrompts,
     logger: Logger
 ):
     try:
@@ -20,17 +44,16 @@ async def handle_assistant_message(
         thread_ts = payload["thread_ts"]
         action_token = payload.get("assistant_thread", {}).get("action_token")
 
-        pending = get_pending_brief(user_id)
+        session = get_session(user_id)
 
-        if not pending:
-            await say("Please use `/brief [topic]` in a channel first.")
-            return
+        # First message — this IS the topic, run full research
+        if not session or session.get("brief") is None:
+            topic = user_message
 
-        brief = pending.get("brief")
+            if not session:
+                start_session(user_id)
 
-        # First message — run full research
-        if brief is None:
-            await say("⏳ Running research, give me a moment...")
+            await say(f"🔍 Researching *{topic}*... give me a moment.")
 
             await client.assistant_threads_setStatus(
                 channel_id=channel_id,
@@ -39,38 +62,35 @@ async def handle_assistant_message(
             )
 
             brief = await run_research(
-                topic=pending["topic"],
+                topic=topic,
                 action_token=action_token,
                 client=client,
                 logger=logger
             )
 
-            update_brief(user_id, brief)
+            update_session(user_id, topic=topic, brief=brief)
             await say(brief)
 
             await client.chat_postMessage(
                 channel=channel_id,
                 thread_ts=thread_ts,
-                text="Ready to post?",
-                blocks=[
-                    {
-                        "type": "actions",
-                        "elements": [
-                            {
-                                "type": "button",
-                                "text": {"type": "plain_text", "text": "Post to channel →"},
-                                "action_id": "post_brief_to_channel",
-                                "style": "primary",
-                                "value": pending["channel_id"]
-                            }
-                        ]
-                    }
-                ]
+                text="Save this brief as a Canvas?",
+                blocks=[EXPORT_BUTTONS]
+            )
+
+
+            await set_suggested_prompts(
+                prompts=REFINEMENT_PROMPTS,
+                title="Refine or save this brief",
             )
 
         # Subsequent messages — refinement mode
         else:
-            await say("⏳ Refining your brief...")
+            await client.chat_postMessage(
+                channel=channel_id,
+                thread_ts=thread_ts,
+                text="⏳ Refining your brief..."
+            )
 
             await client.assistant_threads_setStatus(
                 channel_id=channel_id,
@@ -79,17 +99,38 @@ async def handle_assistant_message(
             )
 
             refined = await run_research(
-                topic=pending["topic"],
+                topic=session["topic"],
                 action_token=action_token,
                 client=client,
                 logger=logger,
-                existing_brief=brief,
+                existing_brief=session["brief"],
                 refinement_request=user_message
             )
 
-            update_brief(user_id, refined)
-            await say(refined)
+            update_session(user_id, brief=refined)
+
+            await client.chat_postMessage(
+                channel=channel_id,
+                thread_ts=thread_ts,
+                text=refined
+            )
+
+            await client.chat_postMessage(
+                channel=channel_id,
+                thread_ts=thread_ts,
+                text="Download this brief?",
+                blocks=[EXPORT_BUTTONS]
+)
+
+            await set_suggested_prompts(
+                prompts=REFINEMENT_PROMPTS,
+                title="Refine or save this brief",
+            )
 
     except Exception as e:
         logger.exception(f"Failed to handle assistant message: {e}")
-        await say("Something went wrong. Please try again.")
+        await client.chat_postMessage(  # ← use chat_postMessage not say for error too
+            channel=channel_id, # type: ignore
+            thread_ts=thread_ts, # type: ignore
+            text="Something went wrong. Please try again."
+        )
