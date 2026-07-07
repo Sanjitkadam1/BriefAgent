@@ -4,6 +4,7 @@ from slack_bolt.context.set_suggested_prompts.async_set_suggested_prompts import
 from slack_sdk.web.async_client import AsyncWebClient
 from agent.state import get_session, start_session, update_session
 from agent.research import run_research
+import re
 
 
 REFINEMENT_PROMPTS = [
@@ -29,6 +30,14 @@ EXPORT_BUTTONS = {
         }
     ]
 }
+
+def _to_slack_mrkdwn(text: str) -> str:
+    # ## Header → *Header*
+    text = re.sub(r'^## (.+)$', r'*\1*', text, flags=re.MULTILINE)
+    text = re.sub(r'^# (.+)$', r'*\1*', text, flags=re.MULTILINE)
+    # **bold** → *bold*
+    text = re.sub(r'\*\*(.*?)\*\*', r'*\1*', text)
+    return text
 
 async def handle_assistant_message(
     payload,
@@ -69,7 +78,8 @@ async def handle_assistant_message(
             )
 
             update_session(user_id, topic=topic, brief=brief)
-            await say(brief)
+            
+            await say(_to_slack_mrkdwn(brief))
 
             await client.chat_postMessage(
                 channel=channel_id,
@@ -112,8 +122,9 @@ async def handle_assistant_message(
             await client.chat_postMessage(
                 channel=channel_id,
                 thread_ts=thread_ts,
-                text=refined
+                text=_to_slack_mrkdwn(refined)
             )
+
 
             await client.chat_postMessage(
                 channel=channel_id,
