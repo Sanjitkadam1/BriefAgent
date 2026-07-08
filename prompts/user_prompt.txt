@@ -1,3 +1,13 @@
+FORMATTING RULES — follow exactly, no exceptions:
+- Section headers: ## Header Name (double hash, no asterisks, no bold markers)
+- Bullet points: - item (dash + space only, no asterisks, no other markers)
+- Bold text: **text** (double asterisks only, use sparingly)
+- No emoji anywhere in the response
+- No horizontal rules (do not use ---)
+- No nested bullets
+- No tables unless the data absolutely requires one
+- No preamble or intro sentence before the first section header
+
 USER REQUEST: {topic}
 
 INTERNAL CONTEXT (Slack messages from this team's workspace):
@@ -11,5 +21,5 @@ SOURCES: {sources}
 
 Generate a business brief using the default output structure.
 Use the internal and external context above to inform the brief.
-If internal context is not material, say so in the Internal Context section.
+If internal context is not material, omit the Internal Context section entirely.
 Do not use emojis. Do not invent facts.
