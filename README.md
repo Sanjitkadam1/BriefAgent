@@ -28,7 +28,7 @@ From there, refine the brief through natural conversation, then export it as a P
 
 ## Architecture
 
-[BriefAgent Architecture](assets/architecture diagram.png)
+[BriefAgent Architecture](assets/architecture.png)
 ---
 
 ## Tech Stack
