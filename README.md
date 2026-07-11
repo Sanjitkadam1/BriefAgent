@@ -28,7 +28,7 @@ From there, refine the brief through natural conversation, then export it as a P
 
 ## Architecture
 
-```
+<!-- ```
 Slack User (types topic in BriefAgent)
               ↓
    BriefAgent Backend (Bolt for Python)
@@ -45,8 +45,8 @@ Slack User (types topic in BriefAgent)
 (conversation)    (PDF / TXT)
               ↓
        Final Brief
-```
-
+``` -->
+![BriefAgent Architecture](assets/architecture.png)
 ---
 
 ## Tech Stack
@@ -87,7 +87,7 @@ Slack User (types topic in BriefAgent)
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/yourname/briefagent.git
+git clone https://github.com/Sanjitkadam1/briefagent.git
 cd briefagent
 ```
 
