@@ -28,25 +28,7 @@ From there, refine the brief through natural conversation, then export it as a P
 
 ## Architecture
 
-<!-- ```
-Slack User (types topic in BriefAgent)
-              ↓
-   BriefAgent Backend (Bolt for Python)
-        /                  \
-  Tavily API           Slack RTS API
- (external web)      (internal context)
-        \                  /
-           Claude API
-        (synthesizes both)
-              ↓
-   Assistant Thread (Slack)
-      /               \
-  Refine            Export
-(conversation)    (PDF / TXT)
-              ↓
-       Final Brief
-``` -->
-![BriefAgent Architecture](assets/architecture.png)
+[BriefAgent Architecture](assets/architecture.png)
 ---
 
 ## Tech Stack
