@@ -1,3 +1,10 @@
+"""Handler for @mentions in Slack channels.
+
+This is the path used when a user addresses the bot directly in a channel. The
+text is cleaned up to remove the mention token, then the assistant replies in a
+threaded response stream with feedback controls.
+"""
+
 import re
 from logging import Logger
 
@@ -27,7 +34,8 @@ async def handle_app_mentioned(
         text = event.get("text", "")
         thread_ts = event.get("thread_ts") or event["ts"]
 
-        # Strip the bot mention from the text
+        # The event payload includes the bot mention token itself, so we remove it
+        # before sending the user’s actual request to the agent.
         cleaned_text = re.sub(r"<@[A-Z0-9]+>", "", text).strip()
 
         if not cleaned_text:

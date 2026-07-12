@@ -4,21 +4,39 @@ import anthropic
 from datetime import date
 from search import search_tavily
 
-# Load prompts once at module level
+
+# Load prompt templates once at import time so the research pipeline reuses the
+# same system/user/refinement instructions for every request.
 def _load_prompt(filename):
     path = os.path.join("prompts", filename)
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
+
 
 SYSTEM_PROMPT = _load_prompt("system_prompt.txt")
 USER_TEMPLATE = _load_prompt("user_prompt.txt")
 REFINEMENT_TEMPLATE = _load_prompt("refinement_prompt.txt")
 
 
-async def run_research(topic, action_token, client, logger, existing_brief=None, refinement_request=None):
+async def run_research(
+    topic,
+    action_token,
+    client,
+    logger,
+    existing_brief=None,
+    refinement_request=None,
+):
+    """Run the full research pipeline for a topic: internal Slack context, web
+    search, and Claude synthesis.
+
+    When an existing brief is provided, the function treats the request as a
+    refinement pass and sends the prior brief back to Claude as conversation
+    history before asking for the updated version.
+    """
     timings = {}
     try:
-        # Step 1 — RTS API: pull internal Slack context
+        # Step 1 — Internal Slack context via the Real-Time Search API.
+        # This gives the brief grounding from discussions already happening in the workspace.
         t0 = time.perf_counter()
         rts_results = ""
         if action_token:
@@ -32,9 +50,9 @@ async def run_research(topic, action_token, client, logger, existing_brief=None,
                 )
                 messages = rts_response.get("results", {}).get("messages", [])
                 if messages:
-                    rts_results = "\n".join([
-                        f"- {m.get('content', '')}" for m in messages[:10] if m.get('content')
-                    ])
+                    rts_results = "\n".join(
+                        [f"- {m.get('content', '')}" for m in messages[:10] if m.get("content")]
+                    )
                     logger.info(f"RTS returned {len(messages)} messages")
                 else:
                     rts_results = "No relevant internal messages found."
@@ -44,7 +62,8 @@ async def run_research(topic, action_token, client, logger, existing_brief=None,
         timings["rts"] = time.perf_counter() - t0
         logger.info(f"Timing — RTS: {timings['rts']:.2f}s")
 
-        # Step 2 — Tavily: pull external web data
+        # Step 2 — External web context via Tavily. This broadens the brief with
+        # live, market-style information not present in Slack.
         t1 = time.perf_counter()
         tavily_results = ""
         sources = "External search unavailable"
@@ -65,7 +84,8 @@ async def run_research(topic, action_token, client, logger, existing_brief=None,
         timings["tavily"] = time.perf_counter() - t1
         logger.info(f"Timing — Tavily: {timings['tavily']:.2f}s")
 
-        # Step 3 — Claude synthesis
+        # Step 3 — Synthesize the internal and external evidence into a single
+        # Claude-generated brief.
         t2 = time.perf_counter()
         anthropic_client = anthropic.AsyncAnthropic(
             api_key=os.environ.get("ANTHROPIC_API_KEY")
@@ -73,35 +93,35 @@ async def run_research(topic, action_token, client, logger, existing_brief=None,
 
         today = date.today().strftime("%B %d, %Y")
 
-        # Build the original user prompt (used either as the new request or
-        # as the first turn in the refinement conversation history)
+        # Build the original user prompt used either for a fresh brief or as the
+        # opening turn of a refinement conversation.
         user_prompt = USER_TEMPLATE.format(
             topic=topic,
             rts_results=rts_results,
             tavily_results=tavily_results,
             date=today,
-            sources=sources
+            sources=sources,
         )
 
         if existing_brief:
             refinement_prompt = REFINEMENT_TEMPLATE.format(
                 refinement_request=refinement_request
             )
+            # For a refinement request, replay the original prompt, the previous
+            # assistant output, and the new refinement instruction in order.
             messages = [
                 {"role": "user", "content": user_prompt},
                 {"role": "assistant", "content": existing_brief},
-                {"role": "user", "content": refinement_prompt}
+                {"role": "user", "content": refinement_prompt},
             ]
         else:
-            messages = [
-                {"role": "user", "content": user_prompt}
-            ]
+            messages = [{"role": "user", "content": user_prompt}]
 
         response = await anthropic_client.messages.create(
             model="claude-haiku-4-5",
             max_tokens=2048,
             system=SYSTEM_PROMPT,
-            messages=messages # type: ignore
+            messages=messages,  # type: ignore
         )
 
         brief = next(block.text for block in response.content if block.type == "text")

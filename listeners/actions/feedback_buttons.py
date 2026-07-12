@@ -1,3 +1,5 @@
+"""Slack action handler for thumbs-up and thumbs-down feedback blocks."""
+
 from logging import Logger
 
 from slack_bolt import Ack

@@ -1,6 +1,12 @@
 def build_app_home_view(
     install_url: str | None = None, is_connected: bool = False
 ) -> dict:
+    """Build the Slack App Home Block Kit payload shown in the sidebar.
+
+    The view is intentionally static and content-driven, with the connection
+    state only changing whether the install call-to-action is shown.
+    """
+    # Slack Block Kit is a declarative layout model: a list of block objects.
     blocks = [
         # Header
         {
