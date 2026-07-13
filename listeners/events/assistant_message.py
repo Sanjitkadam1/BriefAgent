@@ -1,3 +1,9 @@
+"""Assistant-thread message flow for the Slack conversation UI.
+
+This module reacts to the assistant’s threaded user messages: it either starts a
+new research brief or refines the existing one and then posts export controls.
+"""
+
 from logging import Logger
 from slack_bolt.context.say.async_say import AsyncSay
 from slack_bolt.context.set_suggested_prompts.async_set_suggested_prompts import AsyncSetSuggestedPrompts
@@ -32,10 +38,12 @@ EXPORT_BUTTONS = {
 }
 
 def _to_slack_mrkdwn(text: str) -> str:
-    # ## Header → *Header*
+    """Convert a subset of Markdown headings/bold syntax into Slack-friendly formatting."""
+    # Headings are rendered more cleanly when they turn into emphasis blocks.
     text = re.sub(r'^## (.+)$', r'*\1*', text, flags=re.MULTILINE)
     text = re.sub(r'^# (.+)$', r'*\1*', text, flags=re.MULTILINE)
-    # **bold** → *bold*
+    # ReportLab and the Claude response may produce strong emphasis markers;
+    # Slack's markdown expects asterisks around the wording rather than the HTML form.
     text = re.sub(r'\*\*(.*?)\*\*', r'*\1*', text)
     return text
 
@@ -44,8 +52,9 @@ async def handle_assistant_message(
     say: AsyncSay,
     client: AsyncWebClient,
     set_suggested_prompts: AsyncSetSuggestedPrompts,
-    logger: Logger
+    logger: Logger,
 ):
+    """Handle messages in the assistant thread during research or refinement."""
     try:
         user_id = payload["user"]
         user_message = payload.get("text", "").strip()
@@ -55,7 +64,7 @@ async def handle_assistant_message(
 
         session = get_session(user_id)
 
-        # First message — this IS the topic, run full research
+        # First message in the thread is treated as the topic for a new brief.
         if not session or session.get("brief") is None:
             topic = user_message
 
@@ -94,7 +103,7 @@ async def handle_assistant_message(
                 title="Refine or save this brief",
             )
 
-        # Subsequent messages — refinement mode
+        # Later messages are refinement requests against the same in-memory brief.
         else:
             await client.chat_postMessage(
                 channel=channel_id,

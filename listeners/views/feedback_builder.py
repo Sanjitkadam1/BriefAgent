@@ -1,3 +1,5 @@
+"""Factory for Slack feedback controls attached to streamed assistant replies."""
+
 from slack_sdk.models.blocks import (
     Block,
     ContextActionsBlock,

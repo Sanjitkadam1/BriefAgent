@@ -1,3 +1,5 @@
+"""Context-variable plumbing for passing Slack runtime dependencies into tools."""
+
 from contextvars import ContextVar
 
 from agent.deps import AgentDeps

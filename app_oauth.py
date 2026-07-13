@@ -1,3 +1,9 @@
+"""OAuth-enabled Slack app bootstrap.
+
+This module wires the Bolt app with Slack OAuth storage, a bot-token fallback,
+and the listener registration path used by the production app entry point.
+"""
+
 import json
 import logging
 import os
@@ -23,10 +29,14 @@ logger = logging.getLogger(__name__)
 # OAuth settings
 # ---------------------------------------------------------------------------
 
+# Read the app manifest once so the OAuth scopes stay aligned with the Slack
+# app configuration instead of being duplicated in code.
 _manifest = json.loads(Path("manifest.json").read_text())
 BOT_SCOPES = _manifest["oauth_config"]["scopes"]["bot"]
 USER_SCOPES = _manifest["oauth_config"]["scopes"]["user"]
 
+# Persist installation metadata on disk so Slack OAuth can restore tokens across
+# restarts without requiring an app reinstall.
 installation_store = FileInstallationStore(
     base_dir="./data/installations",
 )

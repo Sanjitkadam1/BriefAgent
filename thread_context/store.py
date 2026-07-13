@@ -6,9 +6,11 @@ class SessionStore:
     """Thread-safe in-memory session ID store.
 
     Stores Claude Agent SDK session IDs keyed by (channel_id, thread_ts).
-    The SDK manages conversation history server-side via sessions, so we
-    only need to track session IDs for resuming conversations.
-    Includes TTL-based cleanup and a maximum entry limit.
+    The SDK manages conversation history server-side via sessions, so we only
+    need to track the session identifier for resuming a thread later.
+
+    The store also performs lightweight cleanup to prevent unbounded growth in
+    long-running Slack processes.
     """
 
     def __init__(self, ttl_seconds: int = 86400, max_entries: int = 1000):

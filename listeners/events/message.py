@@ -1,3 +1,10 @@
+"""Message handler for DM and thread replies.
+
+Unlike @mentions, this flow is more selective: it only responds when the user
+is in an existing DM or an already-engaged thread, which keeps the bot from
+replying to unrelated channel traffic.
+"""
+
 from logging import Logger
 
 from slack_bolt.context.async_context import AsyncBoltContext
@@ -27,6 +34,9 @@ async def handle_message(
     if event.get("bot_id"):
         return
 
+    # Direct messages are always eligible because the user is actively talking to
+    # the bot. Thread replies are only allowed when the bot has already started a
+    # conversation in that thread.
     is_dm = event.get("channel_type") == "im"
     is_thread_reply = event.get("thread_ts") is not None
 

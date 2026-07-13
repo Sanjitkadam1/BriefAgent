@@ -1,4 +1,5 @@
 async def upload_brief_as_file(client, channel_id, topic, brief, logger):
+    """Upload a raw markdown brief file into the Slack conversation."""
     try:
         response = await client.files_upload_v2(
             channel=channel_id,

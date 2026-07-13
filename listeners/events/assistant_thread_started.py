@@ -1,3 +1,5 @@
+"""Initialize the assistant thread with a clean state and starter prompt ideas."""
+
 from logging import Logger
 from slack_bolt.context.set_suggested_prompts.async_set_suggested_prompts import AsyncSetSuggestedPrompts
 from slack_bolt.context.say.async_say import AsyncSay
@@ -14,8 +16,9 @@ async def handle_assistant_thread_started(
     payload,
     set_suggested_prompts: AsyncSetSuggestedPrompts,
     say: AsyncSay,
-    logger: Logger
+    logger: Logger,
 ):
+    """Reset per-user state when a new assistant thread starts."""
     try:
         user_id = payload["assistant_thread"]["user_id"]
 

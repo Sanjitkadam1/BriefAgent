@@ -1,3 +1,5 @@
+"""Runtime dependencies passed into the Claude agent for Slack tool access."""
+
 from dataclasses import dataclass
 
 from slack_sdk.web.async_client import AsyncWebClient
