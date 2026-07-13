@@ -22,7 +22,7 @@ From there, refine the brief through natural conversation, then export it as a P
 
 ## Demo
 
-[Link to demo video]
+[[Link to demo video](https://youtu.be/J3FRFRn1M-E)]
 
 ---
 
